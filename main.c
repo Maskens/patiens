@@ -15,6 +15,20 @@ enum DragState {
   DROP
 };
 
+Card cards[NO_OF_CARDS];
+
+Card* find_clicked_card() {
+  for (int i = 0; i < NO_OF_CARDS; i++) {
+    Card card = cards[i];
+
+    if(CheckCollisionPointRec(GetMousePosition(), card.rect_world)) {
+      return &cards[i];
+    }
+  }
+
+  return NULL;
+}
+
 int main(int argc, char *argv[]) {
   SetConfigFlags(FLAG_WINDOW_RESIZABLE);
   InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Cards!");
@@ -29,9 +43,9 @@ int main(int argc, char *argv[]) {
   SetTextureFilter(cards_texture, TEXTURE_FILTER_BILINEAR);
   UnloadImage(card_sprite_sheet);
 
-  Card cards[NO_OF_CARDS];
-
   load_assets(cards);
+
+  Card* active_card = NULL;
 
   Vector2 mouseOffset;
 
@@ -64,42 +78,34 @@ int main(int argc, char *argv[]) {
     // *** Input ***
     Vector2 mpos = GetMousePosition();
 
-    // switch (ds) {
-    //   case NOP:
-    //     if(IsMouseButtonDown(MOUSE_BUTTON_LEFT) 
-    //       && CheckCollisionPointRec(
-    //         GetMousePosition(), 
-    //         card_rect
-    //       )) {
-    //       ds = BEGIN_DRAG;
-    //     }
-    //     break;
-    //   case BEGIN_DRAG:
-    //     mouseOffset.x = mpos.x - card_rect.x;
-    //     mouseOffset.y = mpos.y - card_rect.y;
-    //     ds = DRAG;
-    //   break;
-    //   case DRAG:
-    //     card_rect.x = mpos.x - mouseOffset.x;
-    //     card_rect.y = mpos.y - mouseOffset.y;
-    //     if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
-    //       float diff_x = fabs(card_rect.x - slot2.x);
-    //       float diff_y = fabs(card_rect.y - slot2.y);
-    //
-    //       if (diff_x <= SNAP_DISTANCE && diff_y < SNAP_DISTANCE) {
-    //         card_rect.x = slot2.x;
-    //         card_rect.y = slot2.y;
-    //       } else {
-    //         card_rect.x = slot1.x;
-    //         card_rect.y = slot1.x;
-    //       }
-    //
-    //       ds = NOP;
-    //     }
-    //   break;
-    //   default:
-    //     break;
-    // }
+    switch (ds) {
+      case NOP:
+        if(IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+          if ((active_card = find_clicked_card()) != NULL) {
+            TraceLog(LOG_INFO, "%d", active_card->value);
+
+            ds = BEGIN_DRAG;
+          }
+        }
+        break;
+      case BEGIN_DRAG:
+        mouseOffset.x = mpos.x - active_card->rect_world.x;
+        mouseOffset.y = mpos.y - active_card->rect_world.y;
+        ds = DRAG;
+      break;
+      case DRAG:
+        active_card->rect_world.x = mpos.x - mouseOffset.x;
+        active_card->rect_world.y = mpos.y - mouseOffset.y;
+
+        TraceLog(LOG_INFO, "%d", active_card->rect_world.x);
+
+        if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
+          ds = NOP;
+        }
+        break;
+      default:
+        break;
+    }
 
     // *** Drawing ***
     BeginDrawing();

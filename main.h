@@ -3,8 +3,8 @@
 #ifndef MAIN_H
 #define MAIN_H
 
-#define SCREEN_WIDTH 1536/2
-#define SCREEN_HEIGHT 768*1.5/2
+#define SCREEN_WIDTH 1536
+#define SCREEN_HEIGHT 768*1.5
 
 #define SNAP_DISTANCE 100
 #define NO_OF_CARDS 52
@@ -23,6 +23,7 @@ typedef struct Card {
   Rectangle rect_world;
   Rectangle rect_texture;
   Type type;
+  int value;
 } Card;
 
 #endif
